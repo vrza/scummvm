@@ -19,6 +19,9 @@
  *
  */
 
+#include <map>
+#include <unordered_map>
+
 #include "kyra/gui/debugger.h"
 #include "kyra/engine/kyra_lok.h"
 #include "kyra/engine/kyra_hof.h"
@@ -490,6 +493,9 @@ void Debugger_EoB::initialize() {
 	registerCmd("list_flags", WRAP_METHOD(Debugger_EoB, cmdListFlags));
 	registerCmd("set_flag", WRAP_METHOD(Debugger_EoB, cmdSetFlag));
 	registerCmd("clear_flag", WRAP_METHOD(Debugger_EoB, cmdClearFlag));
+	registerCmd("items_table", WRAP_METHOD(Debugger_EoB, cmdItemsTable));
+	registerCmd("items_stats", WRAP_METHOD(Debugger_EoB, cmdItemsStats));
+	registerCmd("rm_item", WRAP_METHOD(Debugger_EoB, cmdRemoveItem));
 }
 
 bool Debugger_EoB::cmdImportSaveFile(int argc, const char **argv) {
@@ -747,6 +753,58 @@ bool Debugger_EoB::cmdClearFlag(int argc, const char **argv) {
 		_vm->clearScriptFlags(1 << flag);
 		debugPrintf("Flag '%.2d' has been cleared.\n\n", flag);
 	}
+
+	return true;
+}
+
+bool Debugger_EoB::cmdItemsTable(int argc, const char **argv) {
+	const uint16 kItemsTableSize = 600;
+
+	debugPrintf("ITEM TYPE\n");
+	for (uint16 i = 0; i < kItemsTableSize; i++) {
+		EoBItem *item = &_vm->_items[i];
+		debugPrintf("%4d %4d\n", i, item->type);
+	}
+
+	return true;
+}
+
+bool Debugger_EoB::cmdItemsStats(int argc, const char **argv) {
+	const uint16 kItemsTableSize = 600;
+
+	std::unordered_map<int8, uint16> m;
+	std::map<uint16, int8, std::greater<uint16>> sorted;
+
+	for (uint16 i = 0; i < kItemsTableSize; i++) {
+		EoBItem *item = &_vm->_items[i];
+		if (m.find(item->type) == m.end())
+			m[item->type] = 1;
+		else
+			m[item->type] += 1;
+	}
+
+	for (const auto& n : m) {
+		sorted[n.second] = n.first;
+	}
+
+	debugPrintf("TYPE COUNT\n");
+	for (const auto& n : sorted) {
+		debugPrintf("%4d %5d\n", n.second, n.first);
+	}
+
+	return true;
+}
+
+bool Debugger_EoB::cmdRemoveItem(int argc, const char **argv) {
+	if (argc < 2) {
+		debugPrintf("Syntax: rm_item <item>\n");
+		return true;
+	}
+	int item= atoi(argv[1]);
+
+	// TODO check if item is in inventory or on the map
+
+	//_items[item].block = -1;
 
 	return true;
 }
