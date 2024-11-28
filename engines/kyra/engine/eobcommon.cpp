@@ -1590,7 +1590,7 @@ uint32 EoBCoreEngine::getRequiredExperience(int cClass, int levelIndex, int leve
 	if (cClass == -1)
 		return 0xFFFFFFFF;
 
-	const uint32 *tbl = _expRequirementTables[cClass];
+	const uint32 *tbl = _configADDRuleEnhancements ? extendedExpRequirementTables[classType] : _expRequirementTables[classType];
 	return tbl[level - 1];
 }
 
