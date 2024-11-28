@@ -493,7 +493,7 @@ void Debugger_EoB::initialize() {
 	registerCmd("set_flag", WRAP_METHOD(Debugger_EoB, cmdSetFlag));
 	registerCmd("clear_flag", WRAP_METHOD(Debugger_EoB, cmdClearFlag));
 	registerCmd("items_table", WRAP_METHOD(Debugger_EoB, cmdItemsTable));
-	registerCmd("imet_types_count", WRAP_METHOD(Debugger_EoB, cmdItemTypesCount));
+	registerCmd("item_types_count", WRAP_METHOD(Debugger_EoB, cmdItemTypesCount));
 	registerCmd("rm_item", WRAP_METHOD(Debugger_EoB, cmdRemoveItem));
 }
 
@@ -757,10 +757,8 @@ bool Debugger_EoB::cmdClearFlag(int argc, const char **argv) {
 }
 
 bool Debugger_EoB::cmdItemsTable(int argc, const char **argv) {
-	const uint16 kItemsTableSize = 600;
-
 	debugPrintf("ITEM TYPE\n");
-	for (uint16 i = 0; i < kItemsTableSize; i++) {
+	for (uint16 i = 0; i < _vm->_items.size(); i++) {
 		EoBItem *item = &_vm->_items[i];
 		debugPrintf("%4d %4d\n", i, item->type);
 	}
@@ -769,18 +767,16 @@ bool Debugger_EoB::cmdItemsTable(int argc, const char **argv) {
 }
 
 bool Debugger_EoB::cmdItemTypesCount(int argc, const char **argv) {
-	const uint16 kItemsTableSize = 600;
-
 	Common::HashMap<int8, uint16> typeCounts;
 	Common::Array<uint16> sortedCounts;
 	Common::HashMap<uint16, int8> countsToTypes;
 
-	for (uint16 i = 0; i < kItemsTableSize; i++) {
+	for (uint16 i = 0; i < _vm->_items.size(); i++) {
 		EoBItem *item = &_vm->_items[i];
-		if (!typeCounts.contains(item->type))
-			typeCounts[item->type] = 1;
-		else
+		if (typeCounts.contains(item->type))
 			typeCounts[item->type] += 1;
+		else
+			typeCounts[item->type] = 1;
 	}
 
 	Common::HashMap<int8, uint16>::iterator it;
