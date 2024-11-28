@@ -128,7 +128,7 @@ protected:
 	bool cmdSetFlag(int argc, const char **argv);
 	bool cmdClearFlag(int argc, const char **argv);
 	bool cmdItemsTable(int argc, const char **argv);
-	bool cmdItemsStats(int argc, const char **argv);
+	bool cmdItemTypesCount(int argc, const char **argv);
 	bool cmdRemoveItem(int argc, const char **argv);
 };
 #endif // ENABLE_EOB
