@@ -130,6 +130,11 @@ protected:
 	bool cmdItemsTable(int argc, const char **argv);
 	bool cmdItemTypesCount(int argc, const char **argv);
 	bool cmdRemoveItem(int argc, const char **argv);
+
+private:
+	bool rmItem(uint16 itemId);
+	bool isInHand(uint16 itemId);
+	bool isInCharacterInventory(uint16 itemId);
 };
 #endif // ENABLE_EOB
 

@@ -802,16 +802,34 @@ bool Debugger_EoB::cmdRemoveItem(int argc, const char **argv) {
 		return true;
 	}
 	int item= atoi(argv[1]);
-/*
-	if (isInHand(item) || isInCharacterInventory(item)) {
-		return true;
-	}
-  */
 
-	//_items[item].block = -1;
+	Debugger_EoB::rmItem(item);
 
 	return true;
 }
+
+/*
+ *  Private methods
+ */
+
+bool Debugger_EoB::rmItem(uint16 itemId) {
+	if (isInHand(itemId) || isInCharacterInventory(itemId)) {
+		return false;
+	}
+
+	//_items[item].block = -1;
+	return true;
+}
+
+bool Debugger_EoB::isInHand(uint16 itemId) {
+	return _vm->_itemInHand == itemId;
+}
+
+bool Debugger_EoB::isInCharacterInventory(uint16 itemId) {
+	// TOOD write me
+	return _vm->_itemInHand == itemId;
+}
+
 
 #endif // ENABLE_EOB
 
