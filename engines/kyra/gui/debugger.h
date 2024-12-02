@@ -129,9 +129,11 @@ protected:
 	bool cmdClearFlag(int argc, const char **argv);
 	bool cmdItemsTable(int argc, const char **argv);
 	bool cmdItemTypesCount(int argc, const char **argv);
-	bool cmdRemoveItem(int argc, const char **argv);
+	bool cmdRemoveItems(int argc, const char **argv);
+	bool cmdRemoveItemsByType(int argc, const char **argv);
 
 private:
+	void rmItemsByType(int8 itemType);
 	bool rmItem(uint16 itemId);
 	bool isInHand(uint16 itemId);
 	bool isInCharacterInventory(uint16 itemId);

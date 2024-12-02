@@ -494,7 +494,8 @@ void Debugger_EoB::initialize() {
 	registerCmd("clear_flag", WRAP_METHOD(Debugger_EoB, cmdClearFlag));
 	registerCmd("items_table", WRAP_METHOD(Debugger_EoB, cmdItemsTable));
 	registerCmd("item_types_count", WRAP_METHOD(Debugger_EoB, cmdItemTypesCount));
-	registerCmd("rm_item", WRAP_METHOD(Debugger_EoB, cmdRemoveItem));
+	registerCmd("rm_items", WRAP_METHOD(Debugger_EoB, cmdRemoveItems));
+	registerCmd("rm_items_by_type", WRAP_METHOD(Debugger_EoB, cmdRemoveItemsByType));
 }
 
 bool Debugger_EoB::cmdImportSaveFile(int argc, const char **argv) {
@@ -757,10 +758,10 @@ bool Debugger_EoB::cmdClearFlag(int argc, const char **argv) {
 }
 
 bool Debugger_EoB::cmdItemsTable(int argc, const char **argv) {
-	debugPrintf("ITEM TYPE\n");
+	debugPrintf("ITEM TYPE BLOCK\n");
 	for (uint16 i = 0; i < _vm->_items.size(); i++) {
 		EoBItem *item = &_vm->_items[i];
-		debugPrintf("%4d %4d\n", i, item->type);
+		debugPrintf("%4d %4d %5d\n", i, item->type, item->block);
 	}
 
 	return true;
@@ -796,14 +797,34 @@ bool Debugger_EoB::cmdItemTypesCount(int argc, const char **argv) {
 	return true;
 }
 
-bool Debugger_EoB::cmdRemoveItem(int argc, const char **argv) {
+bool Debugger_EoB::cmdRemoveItems(int argc, const char **argv) {
 	if (argc < 2) {
-		debugPrintf("Syntax: rm_item <item>\n");
+		debugPrintf("Syntax: rm_items <item...>\n");
 		return true;
 	}
-	int item= atoi(argv[1]);
 
-	Debugger_EoB::rmItem(item);
+	for (int i = 1; i < argc; i++) {
+		uint16 item= atoi(argv[i]);
+		Debugger_EoB::rmItem(item);
+	}
+
+	//_vm->screen()->updateScreen();
+
+	return true;
+}
+
+bool Debugger_EoB::cmdRemoveItemsByType(int argc, const char **argv) {
+	if (argc < 2) {
+		debugPrintf("Syntax: rm_items_by_type <type...>\n");
+		return true;
+	}
+
+	for (int i = 1; i < argc; i++) {
+		int8 type= atoi(argv[i]);
+		Debugger_EoB::rmItemsByType(type);
+	}
+
+	//_vm->screen()->updateScreen();
 
 	return true;
 }
@@ -812,12 +833,27 @@ bool Debugger_EoB::cmdRemoveItem(int argc, const char **argv) {
  *  Private methods
  */
 
+void Debugger_EoB::rmItemsByType(int8 itemType) {
+	for (uint16 i = 0; i < _vm->_items.size(); i++) {
+		EoBItem *item = &_vm->_items[i];
+		if (item->type == itemType)
+			rmItem(i);
+	}
+}
+
 bool Debugger_EoB::rmItem(uint16 itemId) {
+	if (itemId <= 0) {
+		debugPrintf("%d is not a valid item id\n", itemId);
+		return false;
+	}
+
 	if (isInHand(itemId) || isInCharacterInventory(itemId)) {
 		return false;
 	}
 
-	//_items[item].block = -1;
+	EoBItem *item = &_vm->_items[itemId];
+	_vm->deleteBlockItem(item->block, item->type);
+	debugPrintf("Removed item id %d\n", itemId);
 	return true;
 }
 
@@ -826,8 +862,17 @@ bool Debugger_EoB::isInHand(uint16 itemId) {
 }
 
 bool Debugger_EoB::isInCharacterInventory(uint16 itemId) {
-	// TOOD write me
-	return _vm->_itemInHand == itemId;
+	for (int charIndex = 0; charIndex < 6; charIndex++) {
+		// debugPrintf("===> Searching for itemId %d on character %d\n", itemId, charIndex);
+		for (int i = 0; i < 27; i++) {
+			//debugPrintf("slot %d item %d\n", i, _vm->_characters[charIndex].inventory[i]);
+			if (_vm->_characters[charIndex].inventory[i] == itemId) {
+				debugPrintf("item %d found on character %d in slot %d\n", itemId, charIndex, i);
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 
